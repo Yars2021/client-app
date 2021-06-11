@@ -29,9 +29,9 @@ public class Register extends AuthenticationCommand {
             System.out.println("Enter your username: ");
             username = consoleReader.flexibleConsoleReadLine();
             System.out.println("Enter your password: ");
-            credentials1 = SHA1(username + consoleReader.readConsolePassword());
+            credentials1 = SHA1(username + consoleReader.flexibleConsoleReadPassword());
             System.out.println("Enter your password one more time: ");
-            credentials2 = SHA1(username + consoleReader.readConsolePassword());
+            credentials2 = SHA1(username + consoleReader.flexibleConsoleReadPassword());
             if (credentials1 != null && credentials1.equals(credentials2)) {
                 return new AuthenticationRequest("REG", new User(username, credentials1, null));
             } else {

@@ -29,7 +29,7 @@ public class Login extends AuthenticationCommand {
             System.out.println("Enter your username: ");
             username = consoleReader.flexibleConsoleReadLine();
             System.out.println("Enter your password: ");
-            credentials = SHA1(username + consoleReader.flexibleConsoleReadLine());
+            credentials = SHA1(username + consoleReader.flexibleConsoleReadPassword());
             actor = new User(username, credentials, null);
             return new AuthenticationRequest("LOG", actor);
         } catch (IOException ioException) {

@@ -64,6 +64,7 @@ public class Client {
         ConsoleReader consoleReader = new ConsoleReader();
         authenticationConsoleManager.initialize(consoleReader);
         Boolean connecting = Boolean.TRUE;
+        Boolean running = Boolean.TRUE;
 
         while (connecting) {
             try (CSChannel channel = new CSChannel(new Socket("localhost", 7035))) {
@@ -74,23 +75,25 @@ public class Client {
                 if (authenticationResponse.allowed()) {
                     User user = authenticationResponse.getUser();
                     ClientConsoleManager clientConsoleManager = new ClientConsoleManager(validCommands);
-                    channel.writeObject(clientConsoleManager.formPrimaryPack(user));
-                    ResponsePack responsePack = (ResponsePack) channel.readObject();
-                    clientConsoleManager.printResponsePack(responsePack);
-                    if (responsePack.getAllowed()) {
-                        channel.writeObject(clientConsoleManager.formSecondaryPack(user));
-                        responsePack = (ResponsePack) channel.readObject();
+                    clientConsoleManager.autoInitialize();
+                    while (running) {
+                        channel.writeObject(clientConsoleManager.formPrimaryPack(user));
+                        ResponsePack responsePack = (ResponsePack) channel.readObject();
                         clientConsoleManager.printResponsePack(responsePack);
+                        if (responsePack.allowed()) {
+                            channel.writeObject(clientConsoleManager.formSecondaryPack(user));
+                            responsePack = (ResponsePack) channel.readObject();
+                            clientConsoleManager.printResponsePack(responsePack);
+                        }
                     }
                 }
             } catch (IOException ioException) {
                 System.out.println(ioException.getMessage());
-            }
-            try {
-                System.out.println("Enter \"Y\" if you want to reconnect or anything else to exit");
-                connecting = "Y".equalsIgnoreCase(consoleReader.flexibleConsoleReadLine());
-            } catch (IOException ioException) {
-                System.out.println(ioException.getMessage());
+                try {
+                    System.out.println("Enter \"Y\" if you want to reconnect or anything else to exit");
+                    connecting = "Y".equalsIgnoreCase(consoleReader.flexibleConsoleReadLine());
+                } catch (IOException ignore) {
+                }
             }
         }
         System.out.println("Shutting down the console manager");
