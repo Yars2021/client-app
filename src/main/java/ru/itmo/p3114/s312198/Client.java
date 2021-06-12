@@ -22,8 +22,10 @@ import ru.itmo.p3114.s312198.commands.actions.simple.Show;
 import ru.itmo.p3114.s312198.commands.authentication.Login;
 import ru.itmo.p3114.s312198.commands.authentication.Register;
 import ru.itmo.p3114.s312198.commands.types.CommandTypes;
+import ru.itmo.p3114.s312198.exceptions.TransmissionException;
 import ru.itmo.p3114.s312198.io.ConsoleReader;
 import ru.itmo.p3114.s312198.managers.ClientConsoleManager;
+import ru.itmo.p3114.s312198.managers.States;
 import ru.itmo.p3114.s312198.transmission.AuthenticationRequest;
 import ru.itmo.p3114.s312198.transmission.AuthenticationResponse;
 import ru.itmo.p3114.s312198.transmission.CSChannel;
@@ -69,23 +71,32 @@ public class Client {
         while (connecting) {
             try (CSChannel channel = new CSChannel(new Socket("localhost", 7035))) {
                 AuthenticationRequest authenticationRequest = authenticationConsoleManager.formAuthenticationRequest();
-                channel.writeObject(authenticationRequest);
-                AuthenticationResponse authenticationResponse = (AuthenticationResponse) channel.readObject();
-                System.out.println(authenticationResponse.getServerMessage());
-                if (authenticationResponse.allowed()) {
-                    User user = authenticationResponse.getUser();
-                    ClientConsoleManager clientConsoleManager = new ClientConsoleManager(validCommands);
-                    clientConsoleManager.autoInitialize();
-                    while (running) {
-                        channel.writeObject(clientConsoleManager.formPrimaryPack(user));
-                        ResponsePack responsePack = (ResponsePack) channel.readObject();
-                        clientConsoleManager.printResponsePack(responsePack);
-                        if (responsePack.allowed()) {
-                            channel.writeObject(clientConsoleManager.formSecondaryPack(user));
-                            responsePack = (ResponsePack) channel.readObject();
-                            clientConsoleManager.printResponsePack(responsePack);
+                if (authenticationConsoleManager.getState() == States.RUNNING) {
+                    channel.writeObject(authenticationRequest);
+                    AuthenticationResponse authenticationResponse = (AuthenticationResponse) channel.readObject();
+                    System.out.println(authenticationResponse.getServerMessage());
+                    if (authenticationResponse.allowed()) {
+                        User user = authenticationResponse.getUser();
+                        ClientConsoleManager clientConsoleManager = new ClientConsoleManager(validCommands);
+                        clientConsoleManager.autoInitialize();
+                        while (running) {
+                            channel.writeObject(clientConsoleManager.formPrimaryPack(user));
+                            try {
+                                ResponsePack responsePack = (ResponsePack) channel.readObject();
+                                clientConsoleManager.printResponsePack(responsePack);
+                                if (responsePack.allowed()) {
+                                    channel.writeObject(clientConsoleManager.formSecondaryPack(user));
+                                    responsePack = (ResponsePack) channel.readObject();
+                                    clientConsoleManager.printResponsePack(responsePack);
+                                }
+                            } catch (TransmissionException transmissionException) {
+                                running = Boolean.FALSE;
+                                connecting = Boolean.FALSE;
+                            }
                         }
                     }
+                } else {
+                    connecting = Boolean.FALSE;
                 }
             } catch (IOException ioException) {
                 System.out.println(ioException.getMessage());
