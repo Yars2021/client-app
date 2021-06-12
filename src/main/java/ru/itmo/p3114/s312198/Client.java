@@ -70,6 +70,7 @@ public class Client {
 
         while (connecting) {
             try (CSChannel channel = new CSChannel(new Socket("localhost", 7035))) {
+                System.out.println("Use \"login\" to log in or \"register\" to create an account");
                 AuthenticationRequest authenticationRequest = authenticationConsoleManager.formAuthenticationRequest();
                 if (authenticationConsoleManager.getState() == States.RUNNING) {
                     channel.writeObject(authenticationRequest);
@@ -80,6 +81,7 @@ public class Client {
                         ClientConsoleManager clientConsoleManager = new ClientConsoleManager(validCommands);
                         clientConsoleManager.autoInitialize();
                         while (running) {
+                            System.out.print("> ");
                             channel.writeObject(clientConsoleManager.formPrimaryPack(user));
                             try {
                                 ResponsePack responsePack = (ResponsePack) channel.readObject();
