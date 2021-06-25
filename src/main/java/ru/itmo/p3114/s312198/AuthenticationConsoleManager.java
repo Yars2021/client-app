@@ -32,7 +32,7 @@ public class AuthenticationConsoleManager extends ClientConsoleManager {
                     shutdown();
                 }
                 if (commandRecord.getCommand() instanceof AuthenticationCommand) {
-                    return ((AuthenticationCommand) commandRecord.getCommand()).formRequest(consoleReader);
+                    return ((AuthenticationCommand) commandRecord.getCommand()).formRequest(consoleReader, Boolean.FALSE);
                 }
             } catch (NoSuchCommandException | InvalidCommandException exception) {
                 System.out.println(exception.getMessage());

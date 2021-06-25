@@ -35,5 +35,5 @@ abstract public class AuthenticationCommand extends AbstractCommand {
         return actor;
     }
 
-    abstract public AuthenticationRequest formRequest(ConsoleReader consoleReader);
+    abstract public AuthenticationRequest formRequest(ConsoleReader consoleReader, Boolean suppressOutput);
 }

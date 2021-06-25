@@ -22,13 +22,17 @@ public class Login extends AuthenticationCommand {
     }
 
     @Override
-    public AuthenticationRequest formRequest(ConsoleReader consoleReader) {
+    public AuthenticationRequest formRequest(ConsoleReader consoleReader, Boolean suppressOutput) {
         String username;
         String credentials;
         try {
-            System.out.println("Enter your username: ");
+            if (!suppressOutput) {
+                System.out.println("Enter your username: ");
+            }
             username = consoleReader.flexibleConsoleReadLine();
-            System.out.println("Enter your password: ");
+            if (!suppressOutput) {
+                System.out.println("Enter your password: ");
+            }
             credentials = SHA1(username + consoleReader.flexibleConsoleReadPassword());
             actor = new User(username, credentials, null);
             return new AuthenticationRequest("LOG", actor);

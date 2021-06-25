@@ -22,20 +22,28 @@ public class Register extends AuthenticationCommand {
     }
 
     @Override
-    public AuthenticationRequest formRequest(ConsoleReader consoleReader) {
+    public AuthenticationRequest formRequest(ConsoleReader consoleReader, Boolean suppressOutput) {
         String username;
         String credentials1, credentials2;
         try {
-            System.out.println("Enter your username: ");
+            if (!suppressOutput) {
+                System.out.println("Enter your username: ");
+            }
             username = consoleReader.flexibleConsoleReadLine();
-            System.out.println("Enter your password: ");
+            if (!suppressOutput) {
+                System.out.println("Enter your password: ");
+            }
             credentials1 = SHA1(username + consoleReader.flexibleConsoleReadPassword());
-            System.out.println("Enter your password one more time: ");
+            if (!suppressOutput) {
+                System.out.println("Enter your password one more time: ");
+            }
             credentials2 = SHA1(username + consoleReader.flexibleConsoleReadPassword());
             if (credentials1 != null && credentials1.equals(credentials2)) {
                 return new AuthenticationRequest("REG", new User(username, credentials1, null));
             } else {
-                System.out.println("Passwords are different");
+                if (!suppressOutput) {
+                    System.out.println("Passwords are different");
+                }
                 return null;
             }
         } catch (IOException ioException) {
